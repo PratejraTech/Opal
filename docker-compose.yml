@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # Frontend Application
+  frontend:
+    build: .
+    ports:
+      - "3000:80"
+    environment:
+      - API_KEY=${API_KEY} # Pass Google API Key from .env.local
+    depends_on:
+      - chromadb
+    networks:
+      - rag-network
+
+  # Vector Database
+  chromadb:
+    image: chromadb/chroma:latest
+    volumes:
+      - chroma-data:/chroma/chroma
+    ports:
+      - "8000:8000"
+    environment:
+      - IS_PERSISTENT=TRUE
+      - PERSIST_DIRECTORY=/chroma/chroma
+    networks:
+      - rag-network
+
+  # Placeholder for Backend (if implemented later) or Logic container
+  # Currently frontend mocks this, but this volume ensures data persistence 
+  # for any future sqlite implementation.
+  data-store:
+    image: alpine:latest
+    command: tail -f /dev/null
+    volumes:
+      - sqlite-data:/data
+    networks:
+      - rag-network
+
+networks:
+  rag-network:
+    driver: bridge
+
+volumes:
+  chroma-data:
+  sqlite-data:
